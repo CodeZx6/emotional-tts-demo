@@ -87,7 +87,6 @@ footer { text-align: center; padding: 36px 20px; color: var(--text-sec); font-si
     <p class="authors">Anonymous Authors &mdash; NeurIPS 2026 Submission</p>
     <div class="links">
         <a href="#">Paper (PDF)</a>
-        <a href="#">arXiv</a>
         <a href="#robot-demo" class="primary">Robot Demo</a>
     </div>
 </div>
@@ -95,20 +94,7 @@ footer { text-align: center; padding: 36px 20px; color: var(--text-sec); font-si
 <section id="abstract">
     <h2>Abstract</h2>
     <p class="abstract">
-        Emotionally expressive speech is critical to advancing humanoid robots toward human-like interaction.
-        Modern TTS models produce highly natural speech but lack explicit emotion control.
-        We discover that pretrained TTS models encode emotion as a
-        <strong>linearly decodable signal in a low-dimensional subspace nearly orthogonal to speaker identity</strong>,
-        even without any emotion training objective.
-        Building on this finding, we propose <strong>DUET</strong>, a training-free dual-space method that
-        steers emotion in any frozen iterative TTS model. DUET combines constrained discriminant probing
-        for optimal latent steering directions with magnitude-aware intervention that adapts to varying
-        activation scales across denoising steps, and routes an emotion objective through a differentiable
-        vocoder under a scheduled trust region for spectral emotion refinement.
-        Evaluated on <strong>5 backbones, 3 datasets, and 10 baselines</strong>, DUET achieves emotion control
-        that exceeds the best trained baseline on 4 of 5 backbones.
-        Deployment on an <strong>Ameca humanoid robot</strong> further demonstrates the potential
-        of steered emotional speech for affective human-robot interaction.
+        Emotionally expressive speech is critical to advancing humanoid robots toward human like interaction. Modern text to speech (TTS) models produce highly natural speech but lack explicit emotion control. Existing emotional TTS methods require extensive additional training, remain tied to a single backbone, and offer limited flexibility when new emotions are introduced. Meanwhile, the emotion signal in speech is subtle, entangled with speaker identity, and spread across acoustic dimensions that vary with model architecture. We discover that pretrained TTS models encode emotion as a linearly decodable signal in a low dimensional subspace nearly orthogonal to speaker identity, even without any emotion training objective. Building on this finding, we propose DUET, a training free dual space method that steers emotion in any frozen iterative TTS model. DUET combines constrained discriminant probing for optimal latent steering directions with magnitude aware intervention that adapts to varying activation scales across denoising steps, and routes an emotion objective through a differentiable vocoder under a scheduled trust region for spectral emotion refinement. Evaluated on 5 backbones, 3 datasets, and 10 baselines, DUET achieves emotion control that exceeds the best trained baseline on 4 of 5 backbones. Deployment on Ameca humanoid robot further demonstrates the potential of steered emotional speech for affective human robot interaction.
     </p>
 </section>
 
