@@ -1,486 +1,127 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Speech Emotion Evaluation</title>
+<title>Representation Steering for Emotional Robot Speech — Demo</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
        background: #f5f5f5; color: #333; line-height: 1.6; }
 
-.container { max-width: 720px; margin: 0 auto; padding: 20px; }
+/* ── Header ── */
+header { background: linear-gradient(135deg, #1a1a2e, #16213e);
+         color: #fff; padding: 48px 20px 40px; text-align: center; }
+header h1 { font-size: 1.8em; font-weight: 700; margin-bottom: 8px; }
+header .subtitle { font-size: 1.05em; color: #a8b4c8; margin-bottom: 16px; }
+header .badge { display: inline-block; background: rgba(255,255,255,0.12);
+                border: 1px solid rgba(255,255,255,0.2);
+                padding: 4px 14px; border-radius: 20px; font-size: 0.85em; color: #ccc; }
 
-/* ── Landing page ── */
-#landing { background: #fff; border-radius: 12px; padding: 40px;
-           box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-top: 40px; }
-#landing h1 { font-size: 1.6em; margin-bottom: 16px; }
-#landing .instructions { background: #f0f7ff; border-radius: 8px;
-                         padding: 16px; margin: 16px 0; font-size: 0.95em; }
-#landing .instructions li { margin: 6px 0; }
-#landing input { width: 100%; padding: 12px; font-size: 1.1em;
-                 border: 2px solid #ddd; border-radius: 8px; margin: 8px 0; }
-#landing input:focus { outline: none; border-color: #4a90d9; }
-#landing button { width: 100%; padding: 14px; font-size: 1.1em;
-                  background: #4a90d9; color: #fff; border: none;
-                  border-radius: 8px; cursor: pointer; margin-top: 12px; }
-#landing button:hover { background: #3a7bc8; }
+/* ── Sections ── */
+section { background: #fff; border-radius: 12px; padding: 32px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin: 24px auto; max-width: 960px; }
+section h2 { font-size: 1.35em; margin-bottom: 16px; color: #1a1a2e;
+             border-bottom: 2px solid #eef; padding-bottom: 8px; }
+section p { margin-bottom: 12px; }
 
-/* ── Eval page ── */
-#evalpage { display: none; }
-.progress-bar { background: #e0e0e0; border-radius: 20px; height: 8px;
-                margin: 16px 0; overflow: hidden; }
-.progress-fill { height: 100%; background: linear-gradient(90deg, #4a90d9, #6bb3f0);
-                 border-radius: 20px; transition: width 0.3s; }
-.progress-text { text-align: center; font-size: 0.85em; color: #888; margin-bottom: 12px; }
+/* ── Video gallery ── */
+.video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
+.video-card { background: #f8f8f8; border-radius: 8px; overflow: hidden;
+              border: 1px solid #eee; }
+.video-card video { width: 100%; display: block; }
+.video-card .label { padding: 8px 12px; font-size: 0.85em; font-weight: 600; }
+.video-card .label-angry { color: #c0392b; background: #fde8e8; }
+.video-card .label-happy { color: #d4a017; background: #fef9e7; }
+.video-card .label-sad   { color: #2874a6; background: #e8f0fe; }
 
-.card { background: #fff; border-radius: 12px; padding: 28px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
+/* ── Footer ── */
+footer { text-align: center; padding: 32px 20px; color: #999; font-size: 0.85em; }
 
-.emotion-tag { display: inline-block; padding: 4px 14px; border-radius: 20px;
-               font-size: 0.9em; font-weight: 600; margin-left: 8px; }
-.emotion-angry { background: #fde8e8; color: #c0392b; }
-.emotion-happy { background: #fef9e7; color: #d4a017; }
-.emotion-sad   { background: #e8f0fe; color: #2874a6; }
-
-.audio-section { margin: 16px 0; padding: 14px; background: #fafafa;
-                 border-radius: 8px; border: 1px solid #eee; }
-.audio-section label { font-size: 0.85em; color: #666; display: block; margin-bottom: 6px; }
-.audio-section audio { width: 100%; height: 40px; }
-
-/* ── Rating ── */
-.rating-section { margin: 20px 0; }
-.rating-section h3 { font-size: 1em; margin-bottom: 4px; }
-.rating-desc { font-size: 0.82em; color: #888; margin-bottom: 10px; }
-.rating-row { display: flex; align-items: center; gap: 0; justify-content: center;
-              margin: 8px 0 4px; }
-.rating-btn { width: 44px; height: 40px; border: 1.5px solid #ddd; background: #fff;
-              cursor: pointer; font-size: 0.9em; color: #555; transition: all 0.15s; }
-.rating-btn:first-child { border-radius: 8px 0 0 8px; }
-.rating-btn:last-child  { border-radius: 0 8px 8px 0; }
-.rating-btn.selected { background: #4a90d9; color: #fff; border-color: #4a90d9;
-                       font-weight: 600; }
-.rating-btn:hover:not(.selected) { background: #e8f0fe; }
-.rating-labels { display: flex; justify-content: space-between;
-                 font-size: 0.75em; color: #aaa; padding: 0 4px; }
-
-/* ── Navigation ── */
-.nav-row { display: flex; gap: 12px; margin-top: 16px; }
-.nav-btn { flex: 1; padding: 14px; font-size: 1em; border: none;
-           border-radius: 8px; cursor: pointer; font-weight: 500; }
-.nav-prev { background: #e8e8e8; color: #555; }
-.nav-next { background: #4a90d9; color: #fff; }
-.nav-next:disabled { background: #b0cfe8; cursor: not-allowed; }
-.nav-prev:hover { background: #d8d8d8; }
-.nav-next:hover:not(:disabled) { background: #3a7bc8; }
-
-/* ── Done page ── */
-#donepage { display: none; }
-.done-card { background: #fff; border-radius: 12px; padding: 40px;
-             box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-top: 40px;
-             text-align: center; }
-.done-card h2 { color: #27ae60; margin-bottom: 16px; }
-.done-card button { padding: 14px 32px; font-size: 1.1em;
-                    background: #27ae60; color: #fff; border: none;
-                    border-radius: 8px; cursor: pointer; margin-top: 16px; }
-.done-card button:hover { background: #219a52; }
-
-.warn { color: #e74c3c; font-size: 0.85em; margin-top: 4px; display: none; }
+@media (max-width: 700px) {
+    .video-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
-<div class="container">
 
-<!-- ════════ Landing ════════ -->
-<div id="landing">
-  <h1>语音情绪评测</h1>
-  <p>感谢您参加本次评测！请仔细阅读以下说明。</p>
-  <div class="instructions">
-    <ol>
-      <li><b>请佩戴耳机</b>，在安静环境中进行评测。</li>
-      <li>每页会播放一段语音，请从两个维度评分：
-        <ul>
-          <li><b>自然度 (nMOS)</b>：语音听起来是否自然、流畅？</li>
-          <li><b>情绪表现 (eMOS)</b>：语音的情绪是否与目标情绪匹配？</li>
-        </ul>
-      </li>
-      <li>评分范围 1.0 - 5.0（0.5 递增），1=最差，5=最好。</li>
-      <li>每段语音请<b>至少听一遍</b>再评分。</li>
-      <li>评测进度会自动保存，关闭页面后可继续。</li>
-    </ol>
-  </div>
-  <input type="text" id="evalId" placeholder="请输入您的英文名">
-  <button onclick="startEval()">开始评测</button>
-</div>
+<header>
+    <h1>Representation Steering for Emotional Robot Speech</h1>
+    <p class="subtitle">Deploying inference-time emotion control on an Ameca humanoid robot</p>
+    <span class="badge">NeurIPS 2026 — Anonymous Submission</span>
+</header>
 
-<!-- ════════ Eval ════════ -->
-<div id="evalpage">
-  <div class="progress-text" id="progressText"></div>
-  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<section id="robot-video">
+    <h2>Robot Video Gallery</h2>
+    <p>
+        Short clips of Ameca expressing each emotion using our generated emotional speech.
+        Facial expressions are synchronized with the audio content.
+    </p>
 
-  <div class="card">
-    <div style="display:flex; align-items:center; justify-content:space-between;">
-      <span style="font-size:0.85em; color:#888;" id="sampleId"></span>
-      <span class="emotion-tag" id="emotionTag"></span>
+    <h3 style="color:#c0392b; margin: 20px 0 12px;">Angry</h3>
+    <div class="video-grid">
+        <div class="video-card">
+            <video controls preload="metadata" src="video/angry_1.mp4"></video>
+            <div class="label label-angry">Angry — Clip 1</div>
+        </div>
+        <div class="video-card">
+            <video controls preload="metadata" src="video/angry_2.mp4"></video>
+            <div class="label label-angry">Angry — Clip 2</div>
+        </div>
+        <div class="video-card">
+            <video controls preload="metadata" src="video/angry_3.mp4"></video>
+            <div class="label label-angry">Angry — Clip 3</div>
+        </div>
     </div>
 
-    <div class="audio-section" style="margin-top:14px;">
-      <label>▶ 待评测语音</label>
-      <audio id="targetAudio" controls preload="auto"></audio>
+    <h3 style="color:#d4a017; margin: 20px 0 12px;">Happy</h3>
+    <div class="video-grid">
+        <div class="video-card">
+            <video controls preload="metadata" src="video/happy_1.mp4"></video>
+            <div class="label label-happy">Happy — Clip 1</div>
+        </div>
+        <div class="video-card">
+            <video controls preload="metadata" src="video/happy_2.mp4"></video>
+            <div class="label label-happy">Happy — Clip 2</div>
+        </div>
+        <div class="video-card">
+            <video controls preload="metadata" src="video/happy_3.mp4"></video>
+            <div class="label label-happy">Happy — Clip 3</div>
+        </div>
+        <div class="video-card">
+            <video controls preload="metadata" src="video/happy_4.mp4"></video>
+            <div class="label label-happy">Happy — Clip 4</div>
+        </div>
+        <div class="video-card">
+            <video controls preload="metadata" src="video/happy_5.mp4"></video>
+            <div class="label label-happy">Happy — Clip 5</div>
+        </div>
     </div>
 
-    <!-- nMOS -->
-    <div class="rating-section">
-      <h3>自然度 (nMOS)</h3>
-      <div class="rating-desc">语音是否自然、流畅、没有明显的机器感或失真？</div>
-      <div class="rating-row" id="nmos-row"></div>
-      <div class="rating-labels"><span>1 = 非常不自然</span><span>5 = 完全自然</span></div>
-      <div class="warn" id="nmos-warn">请选择评分</div>
+    <h3 style="color:#2874a6; margin: 20px 0 12px;">Sad</h3>
+    <div class="video-grid">
+        <div class="video-card">
+            <video controls preload="metadata" src="video/sad_1.mp4"></video>
+            <div class="label label-sad">Sad — Clip 1</div>
+        </div>
+        <div class="video-card">
+            <video controls preload="metadata" src="video/sad_2.mp4"></video>
+            <div class="label label-sad">Sad — Clip 2</div>
+        </div>
+        <div class="video-card">
+            <video controls preload="metadata" src="video/sad_3.mp4"></video>
+            <div class="label label-sad">Sad — Clip 3</div>
+        </div>
+        <div class="video-card">
+            <video controls preload="metadata" src="video/sad_4.mp4"></video>
+            <div class="label label-sad">Sad — Clip 4</div>
+        </div>
     </div>
+</section>
 
-    <!-- eMOS -->
-    <div class="rating-section">
-      <h3>情绪表现 (eMOS)</h3>
-      <div class="rating-desc">语音的情绪是否与上方标注的<b>目标情绪</b>匹配？</div>
-      <div class="rating-row" id="emos-row"></div>
-      <div class="rating-labels"><span>1 = 完全不匹配</span><span>5 = 完美匹配</span></div>
-      <div class="warn" id="emos-warn">请选择评分</div>
-    </div>
+<footer>
+    Anonymous submission to NeurIPS 2026
+</footer>
 
-  </div>
-
-  <div class="nav-row">
-    <button class="nav-btn nav-prev" onclick="navigate(-1)">← 上一条</button>
-    <button class="nav-btn nav-next" id="nextBtn" onclick="navigate(1)">下一条 →</button>
-  </div>
-</div>
-
-<!-- ════════ Done ════════ -->
-<div id="donepage">
-  <div class="done-card">
-    <h2 id="doneTitle">⏳ 正在提交...</h2>
-    <p id="doneMsg">请稍候，正在将结果上传至服务器。</p>
-    <button onclick="downloadResults()" style="margin-top:16px;">下载结果备份 (JSON)</button>
-    <p style="margin-top:16px; font-size:0.85em; color:#888;">
-      共评测 <span id="doneCount"></span> 条语音</p>
-  </div>
-</div>
-
-</div><!-- container -->
-
-<script>
-// ══════════════════════════════════════════════════════
-// CONFIG — Edit this section to match your audio files
-// ══════════════════════════════════════════════════════
-
-// Audio base path (relative to index.html)
-const AUDIO_BASE = "audio";
-
-// Systems to evaluate (directory names under AUDIO_BASE)
-const SYSTEMS = [
-  { id: "ours",       label: "System A" },
-  { id: "qwen3tts",   label: "System B" },
-  { id: "cosyvoice2", label: "System C" },
-  { id: "emoknob",    label: "System D" },
-];
-
-// Emotions
-const EMOTIONS = ["angry", "happy", "sad"];
-const EMO_CN = { angry: "愤怒", happy: "高兴", sad: "悲伤" };
-
-// Sample IDs (filenames without extension, shared across systems)
-// Each emotion has its own list. Adjust to match your actual files.
-// Format: audio/{system}/{emotion}/{sample_id}.wav
-const SAMPLES_PER_EMOTION = 3;
-const SAMPLE_IDS = {};
-for (const emo of EMOTIONS) {
-  SAMPLE_IDS[emo] = [];
-  for (let i = 1; i <= SAMPLES_PER_EMOTION; i++) {
-    SAMPLE_IDS[emo].push(String(i).padStart(3, "0"));
-  }
-}
-
-// Google Sheets backend URL (see SETUP.md for how to create)
-// Leave empty to disable auto-submit (will only offer JSON download)
-const GOOGLE_SHEET_URL = "";
-
-// ══════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════
-
-let evaluatorId = "";
-let trialOrder = [];    // [{system, emotion, sampleId}, ...]
-let currentIdx = 0;
-let ratings = {};       // { "idx": {nmos, emos} }
-let trialMeta = {};     // { "idx": {startTime, playCount, duration_sec} }
-
-// ══════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════
-
-function buildRatingButtons(containerId, key) {
-  const row = document.getElementById(containerId);
-  row.innerHTML = "";
-  for (let v = 1.0; v <= 5.0; v += 0.5) {
-    const btn = document.createElement("button");
-    btn.className = "rating-btn";
-    btn.textContent = v.toFixed(1);
-    btn.onclick = () => selectRating(key, v, containerId);
-    row.appendChild(btn);
-  }
-}
-
-function selectRating(key, value, containerId) {
-  // Update UI
-  const btns = document.getElementById(containerId).children;
-  for (const b of btns) {
-    b.classList.toggle("selected", parseFloat(b.textContent) === value);
-  }
-  // Save
-  if (!ratings[currentIdx]) ratings[currentIdx] = {};
-  ratings[currentIdx][key] = value;
-  document.getElementById(key + "-warn").style.display = "none";
-  saveProgress();
-}
-
-function seededShuffle(arr, seed) {
-  // Simple deterministic shuffle based on evaluator ID
-  const a = [...arr];
-  let s = 0;
-  for (let i = 0; i < seed.length; i++) s = ((s << 5) - s + seed.charCodeAt(i)) | 0;
-  for (let i = a.length - 1; i > 0; i--) {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    const j = s % (i + 1);
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function buildTrialOrder() {
-  const trials = [];
-  for (const sys of SYSTEMS) {
-    for (const emo of EMOTIONS) {
-      for (const sid of SAMPLE_IDS[emo]) {
-        trials.push({ system: sys.id, emotion: emo, sampleId: sid });
-      }
-    }
-  }
-  return seededShuffle(trials, evaluatorId);
-}
-
-// ══════════════════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════════════════
-
-function showTrial(idx) {
-  currentIdx = idx;
-  const trial = trialOrder[idx];
-  const total = trialOrder.length;
-
-  // Progress
-  const answered = Object.keys(ratings).length;
-  document.getElementById("progressText").textContent =
-    `第 ${idx + 1} / ${total} 条（已完成 ${answered} 条）`;
-  document.getElementById("progressFill").style.width =
-    `${(answered / total) * 100}%`;
-  document.getElementById("sampleId").textContent = `#${idx + 1}`;
-
-  // Emotion tag
-  const tag = document.getElementById("emotionTag");
-  tag.textContent = `目标情绪：${EMO_CN[trial.emotion]}`;
-  tag.className = `emotion-tag emotion-${trial.emotion}`;
-
-  // Audio
-  const audioEl = document.getElementById("targetAudio");
-  audioEl.src = `${AUDIO_BASE}/${trial.system}/${trial.emotion}/${trial.sampleId}.wav`;
-
-  // Track play count and time
-  if (!trialMeta[idx]) {
-    trialMeta[idx] = { startTime: Date.now(), playCount: 0 };
-  } else {
-    trialMeta[idx].startTime = Date.now(); // reset on revisit
-  }
-  audioEl.onplay = () => { trialMeta[idx].playCount++; saveProgress(); };
-
-  // Restore ratings if exist
-  buildRatingButtons("nmos-row", "nmos");
-  buildRatingButtons("emos-row", "emos");
-
-  if (ratings[idx]) {
-    for (const key of ["nmos", "emos"]) {
-      if (ratings[idx][key] != null) {
-        const row = document.getElementById(key + "-row");
-        for (const b of row.children) {
-          b.classList.toggle("selected", parseFloat(b.textContent) === ratings[idx][key]);
-        }
-      }
-    }
-  }
-
-  // Hide warnings
-  for (const k of ["nmos", "emos"]) {
-    document.getElementById(k + "-warn").style.display = "none";
-  }
-
-  // Update next button text
-  const nextBtn = document.getElementById("nextBtn");
-  nextBtn.textContent = idx === total - 1 ? "提交评测 ✓" : "下一条 →";
-
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function navigate(delta) {
-  // Record time spent on current trial
-  if (trialMeta[currentIdx] && trialMeta[currentIdx].startTime) {
-    const elapsed = (Date.now() - trialMeta[currentIdx].startTime) / 1000;
-    trialMeta[currentIdx].duration_sec = (trialMeta[currentIdx].duration_sec || 0) + elapsed;
-  }
-
-  if (delta > 0) {
-    // Validate current ratings
-    let valid = true;
-    for (const key of ["nmos", "emos"]) {
-      if (!ratings[currentIdx] || ratings[currentIdx][key] == null) {
-        document.getElementById(key + "-warn").style.display = "block";
-        valid = false;
-      }
-    }
-    if (!valid) return;
-
-    if (currentIdx === trialOrder.length - 1) {
-      // Done
-      finishEval();
-      return;
-    }
-  }
-
-  const newIdx = currentIdx + delta;
-  if (newIdx >= 0 && newIdx < trialOrder.length) {
-    showTrial(newIdx);
-  }
-}
-
-// ══════════════════════════════════════════════════════
-// PERSISTENCE (localStorage)
-// ══════════════════════════════════════════════════════
-
-function storageKey() { return `eval_${evaluatorId}`; }
-
-function saveProgress() {
-  const data = { evaluatorId, currentIdx, ratings, trialMeta, timestamp: Date.now() };
-  localStorage.setItem(storageKey(), JSON.stringify(data));
-}
-
-function loadProgress() {
-  const raw = localStorage.getItem(storageKey());
-  if (!raw) return false;
-  try {
-    const data = JSON.parse(raw);
-    ratings = data.ratings || {};
-    trialMeta = data.trialMeta || {};
-    currentIdx = data.currentIdx || 0;
-    return true;
-  } catch { return false; }
-}
-
-// ══════════════════════════════════════════════════════
-// START / FINISH
-// ══════════════════════════════════════════════════════
-
-function startEval() {
-  evaluatorId = document.getElementById("evalId").value.trim();
-  if (!evaluatorId) { alert("请输入评测者 ID"); return; }
-
-  trialOrder = buildTrialOrder();
-  const resumed = loadProgress();
-
-  document.getElementById("landing").style.display = "none";
-  document.getElementById("evalpage").style.display = "block";
-
-  if (resumed) {
-    // Find first unanswered
-    let firstUnanswered = trialOrder.length;
-    for (let i = 0; i < trialOrder.length; i++) {
-      if (!ratings[i] || ratings[i].nmos == null) { firstUnanswered = i; break; }
-    }
-    showTrial(Math.min(currentIdx, firstUnanswered));
-  } else {
-    showTrial(0);
-  }
-}
-
-let deviceInfo = { ip: "unknown", ua: navigator.userAgent, screen: `${screen.width}x${screen.height}` };
-fetch("https://api.ipify.org?format=json").then(r=>r.json()).then(d=>{deviceInfo.ip=d.ip}).catch(()=>{});
-
-function buildResultsPayload() {
-  return {
-    evaluator_id: evaluatorId,
-    timestamp: new Date().toISOString(),
-    device: deviceInfo,
-    n_trials: trialOrder.length,
-    n_rated: Object.keys(ratings).length,
-    trials: trialOrder.map((trial, idx) => ({
-      index: idx,
-      system: trial.system,
-      emotion: trial.emotion,
-      sample_id: trial.sampleId,
-      nmos: ratings[idx]?.nmos ?? null,
-      emos: ratings[idx]?.emos ?? null,
-      play_count: trialMeta[idx]?.playCount ?? 0,
-      duration_sec: Math.round(trialMeta[idx]?.duration_sec ?? 0),
-    })),
-  };
-}
-
-async function submitToGitHub(payload) {
-  const _k = [103,104,111,95,111,71,55,103,53,66,102,77,85,73,111,118,66,71,76,77,112,111,108,82,50,50,86,107,52,85,98,109,85,53,48,85,56,83,104,67];
-  const tk = _k.map(c => String.fromCharCode(c)).join("");
-  try {
-    const resp = await fetch("https://api.github.com/repos/CodeZx6/emotion-eval/issues", {
-      method: "POST",
-      headers: {
-        "Authorization": "token " + tk,
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: "[eval] " + payload.evaluator_id + " (" + payload.n_rated + " trials)",
-        body: "```json\n" + JSON.stringify(payload, null, 2) + "\n```",
-        labels: ["eval-result"],
-      }),
-    });
-    return resp.ok;
-  } catch (e) {
-    console.error("Submit failed:", e);
-    return false;
-  }
-}
-
-async function finishEval() {
-  saveProgress();
-  document.getElementById("evalpage").style.display = "none";
-  document.getElementById("donepage").style.display = "block";
-  document.getElementById("doneCount").textContent = Object.keys(ratings).length;
-
-  const payload = buildResultsPayload();
-  const ok = await submitToGitHub(payload);
-  document.getElementById("doneTitle").textContent = ok ? "✅ 评测完成！" : "⚠️ 自动提交失败";
-  document.getElementById("doneMsg").textContent = ok
-    ? "结果已自动提交，感谢参与！"
-    : "请下载 JSON 文件并发送给实验负责人。";
-}
-
-function downloadResults() {
-  const blob = new Blob([JSON.stringify(buildResultsPayload(), null, 2)],
-                        { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `eval_results_${evaluatorId}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-</script>
 </body>
 </html>
