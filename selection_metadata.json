@@ -1,0 +1,5 @@
+{
+  "backbone": "GradTTS",
+  "dataset": "ESD",
+  "config": "rfas (latent steering)"
+}

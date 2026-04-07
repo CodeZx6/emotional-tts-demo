@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sample Selection - 多Backbone对比</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+       background: #f5f5f5; color: #333; line-height: 1.6; padding: 20px; }
+.container { max-width: 1100px; margin: 0 auto; }
+h1 { font-size: 1.4em; margin-bottom: 4px; }
+.desc { color: #666; font-size: 0.9em; margin-bottom: 16px; }
+
+.backbone-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.9em;
+       border: 2px solid #ddd; background: #fff; transition: all 0.2s; }
+.tab.active { border-color: #4a90d9; background: #e8f0fe; font-weight: 600; }
+.tab:hover { border-color: #aaa; }
+
+.emotion-section { margin-bottom: 28px; }
+.emotion-header { font-size: 1.1em; font-weight: 600; padding: 6px 14px;
+                  border-radius: 8px; margin-bottom: 10px; color: #fff; display: flex;
+                  justify-content: space-between; align-items: center; }
+.emotion-angry { background: #c0392b; }
+.emotion-happy { background: #d4a017; }
+.emotion-sad   { background: #2874a6; }
+
+.sample-row { background: #fff; border-radius: 8px; padding: 10px 14px;
+              margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+              border: 2px solid transparent; transition: all 0.15s; cursor: pointer;
+              display: grid; grid-template-columns: 30px 1fr 280px; align-items: center; gap: 10px; }
+.sample-row:hover { border-color: #ddd; }
+.sample-row.selected { border-color: #27ae60; background: #f0faf3; }
+
+.row-num { font-size: 0.8em; color: #aaa; text-align: center; }
+.row-info { font-size: 0.88em; }
+.row-text { color: #444; }
+.row-meta { font-size: 0.72em; color: #aaa; }
+.row-audio audio { width: 100%; height: 32px; }
+
+.badge { display: inline-block; background: #27ae60; color: #fff; font-size: 0.65em;
+         padding: 1px 7px; border-radius: 8px; margin-left: 6px; vertical-align: middle; }
+
+.counter { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff;
+           padding: 10px 18px; border-radius: 10px; font-size: 0.85em;
+           box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 100; }
+.counter .num { font-weight: 700; color: #4aee88; }
+
+.export-btn { position: fixed; bottom: 20px; left: 20px; background: #27ae60; color: #fff;
+              padding: 10px 20px; border-radius: 10px; border: none; font-size: 0.95em;
+              cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 100; }
+.export-btn:hover { background: #219a52; }
+.export-btn:disabled { background: #999; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Ours 样本挑选 (多Backbone对比)</h1>
+  <p class="desc">切换 Backbone 试听同一句话在不同系统下的效果。每个情绪选 <b>3 条</b>。选中后在所有 backbone 间同步标记。</p>
+
+  <div class="backbone-tabs" id="tabs"></div>
+  <div id="content"></div>
+</div>
+
+<div class="counter">已选: <span class="num" id="countText">0/9</span></div>
+<button class="export-btn" id="exportBtn" onclick="exportSelection()" disabled>导出选择 (JSON)</button>
+
+<script>
+const BACKBONES = {
+  "candidates_f5_emoref":  {label: "★ F5-TTS emo-ref + steering", dir: "audio/candidates_f5_emoref"},
+  "candidates_gradtts_dual":{label: "GradTTS dual-space (α=80)", dir: "audio/candidates_gradtts_dual"},
+  "candidates_matcha_dual":{label: "Matcha dual-space (α=50)", dir: "audio/candidates_matcha_dual"},
+  "candidates":            {label: "F5-TTS neutral-ref balanced (α=10)", dir: "audio/candidates"},
+  "candidates_f5_quality": {label: "F5-TTS neutral-ref quality (α=2)",  dir: "audio/candidates_f5_quality"},
+};
+
+let currentBB = "candidates_f5_emoref";
+
+const TEXTS_F5_EMOREF = {
+  angry: [
+    {file:"0033.wav", utmos:3.01, spk:"0012", text:"And she caught at the brooch."},
+    {file:"0025.wav", utmos:2.89, spk:"0011", text:"I am going back to back home."},
+    {file:"0034.wav", utmos:2.76, spk:"0012", text:"She has no place for hot peper ."},
+    {file:"0006.wav", utmos:2.72, spk:"0011", text:"It's part of my secret."},
+    {file:"0043.wav", utmos:2.49, spk:"0012", text:"Another one, ten thousand dollars."},
+    {file:"0007.wav", utmos:2.34, spk:"0011", text:"It would be a hard choice."},
+    {file:"0030.wav", utmos:2.33, spk:"0012", text:"Called out the cloud."},
+    {file:"0045.wav", utmos:2.29, spk:"0012", text:"Over them swooped the eagles."},
+    {file:"0041.wav", utmos:1.78, spk:"0012", text:"where are you going?"},
+    {file:"0047.wav", utmos:1.71, spk:"0012", text:"Paul's teeth ached because of lemon."},
+  ],
+  happy: [
+    {file:"0038.wav", utmos:3.60, spk:"0012", text:"And his heart wagged with joy like a lamb's tail."},
+    {file:"0006.wav", utmos:3.04, spk:"0011", text:"It's part of my secret."},
+    {file:"0001.wav", utmos:3.00, spk:"0011", text:"A special pot too."},
+    {file:"0019.wav", utmos:2.93, spk:"0011", text:"So Tom saw night as it were broad daylight."},
+    {file:"0004.wav", utmos:2.85, spk:"0011", text:"She has no place for hot peper ."},
+    {file:"0033.wav", utmos:2.70, spk:"0012", text:"And she caught at the brooch."},
+    {file:"0043.wav", utmos:2.57, spk:"0012", text:"Another one, ten thousand dollars."},
+    {file:"0025.wav", utmos:2.51, spk:"0011", text:"I am going back to back home."},
+    {file:"0024.wav", utmos:2.41, spk:"0011", text:"A whirring noise was heard."},
+    {file:"0015.wav", utmos:2.25, spk:"0011", text:"Over them swooped the eagles."},
+  ],
+  sad: [
+    {file:"0010.wav", utmos:3.58, spk:"0011", text:"She'll be feverish after so much thinking."},
+    {file:"0013.wav", utmos:3.40, spk:"0011", text:"Another one, ten thousand dollars."},
+    {file:"0024.wav", utmos:3.39, spk:"0011", text:"A whirring noise was heard."},
+    {file:"0005.wav", utmos:3.38, spk:"0011", text:"They are made of wood."},
+    {file:"0007.wav", utmos:3.37, spk:"0011", text:"It would be a hard choice."},
+    {file:"0008.wav", utmos:3.34, spk:"0011", text:"And his heart wagged with joy like a lamb's tail."},
+    {file:"0022.wav", utmos:3.29, spk:"0011", text:"And what does it mean?"},
+    {file:"0036.wav", utmos:3.29, spk:"0012", text:"It's part of my secret."},
+    {file:"0045.wav", utmos:3.25, spk:"0012", text:"Over them swooped the eagles."},
+    {file:"0027.wav", utmos:3.11, spk:"0011", text:"Dear customer,welcome to our ship."},
+  ],
+};
+
+const TEXTS_GRADTTS = {
+  angry: [
+    {file:"0026.wav", utmos:4.15, spk:"0011", text:"What are you waiting for? man."},
+    {file:"0034.wav", utmos:4.10, spk:"0012", text:"She has no place for hot peper ."},
+    {file:"0038.wav", utmos:4.03, spk:"0012", text:"And his heart wagged with joy like a lamb's tail."},
+    {file:"0014.wav", utmos:3.94, spk:"0011", text:"But things haven't change yet."},
+    {file:"0010.wav", utmos:3.93, spk:"0011", text:"She'll be feverish after so much thinking."},
+    {file:"0013.wav", utmos:3.92, spk:"0011", text:"Another one, ten thousand dollars."},
+    {file:"0003.wav", utmos:3.88, spk:"0011", text:"And she caught at the brooch."},
+    {file:"0042.wav", utmos:3.69, spk:"0012", text:"You gain for nothing girl!"},
+    {file:"0015.wav", utmos:3.43, spk:"0011", text:"Over them swooped the eagles."},
+    {file:"0029.wav", utmos:3.34, spk:"0011", text:"Do you have anything in mind?"},
+  ],
+  happy: [
+    {file:"0034.wav", utmos:4.25, spk:"0012", text:"She has no place for hot peper ."},
+    {file:"0001.wav", utmos:4.16, spk:"0011", text:"A special pot too."},
+    {file:"0048.wav", utmos:4.04, spk:"0012", text:"And be with you,Tom!"},
+    {file:"0008.wav", utmos:3.79, spk:"0011", text:"And his heart wagged with joy like a lamb's tail."},
+    {file:"0044.wav", utmos:3.74, spk:"0012", text:"But things haven't change yet."},
+    {file:"0003.wav", utmos:3.70, spk:"0011", text:"And she caught at the brooch."},
+    {file:"0039.wav", utmos:3.68, spk:"0012", text:"She keeps saying I'm hers."},
+    {file:"0028.wav", utmos:3.60, spk:"0011", text:"What do you think of this question?"},
+    {file:"0032.wav", utmos:3.51, spk:"0012", text:"Why did I wake up!"},
+    {file:"0022.wav", utmos:3.22, spk:"0011", text:"And what does it mean?"},
+  ],
+  sad: [
+    {file:"0044.wav", utmos:3.83, spk:"0012", text:"But things haven't change yet."},
+    {file:"0015.wav", utmos:3.82, spk:"0011", text:"Over them swooped the eagles."},
+    {file:"0017.wav", utmos:3.59, spk:"0011", text:"Paul's teeth ached because of lemon."},
+    {file:"0007.wav", utmos:3.51, spk:"0011", text:"It would be a hard choice."},
+  ],
+};
+
+const TEXTS_MATCHA = {
+  angry: [
+    {file:"0043.wav", utmos:4.48, spk:"0012", text:"Another one, ten thousand dollars."},
+    {file:"0008.wav", utmos:4.47, spk:"0011", text:"And his heart wagged with joy like a lamb's tail."},
+    {file:"0012.wav", utmos:4.41, spk:"0011", text:"You gain for nothing girl!"},
+    {file:"0045.wav", utmos:4.31, spk:"0012", text:"Over them swooped the eagles."},
+    {file:"0016.wav", utmos:4.24, spk:"0011", text:"But mom I'm not certain about."},
+    {file:"0033.wav", utmos:4.20, spk:"0012", text:"And she caught at the brooch."},
+    {file:"0025.wav", utmos:4.19, spk:"0011", text:"I am going back to back home."},
+    {file:"0024.wav", utmos:3.62, spk:"0011", text:"A whirring noise was heard."},
+  ],
+  happy: [
+    {file:"0002.wav", utmos:4.40, spk:"0011", text:"Why did I wake up!"},
+    {file:"0001.wav", utmos:4.29, spk:"0011", text:"A special pot too."},
+    {file:"0033.wav", utmos:4.26, spk:"0012", text:"And she caught at the brooch."},
+    {file:"0020.wav", utmos:4.22, spk:"0011", text:"Enough,you foolish chatter."},
+    {file:"0022.wav", utmos:4.21, spk:"0011", text:"And what does it mean?"},
+    {file:"0016.wav", utmos:4.07, spk:"0011", text:"But mom I'm not certain about."},
+    {file:"0029.wav", utmos:4.05, spk:"0011", text:"Do you have anything in mind?"},
+    {file:"0035.wav", utmos:4.03, spk:"0012", text:"They are made of wood."},
+    {file:"0018.wav", utmos:4.02, spk:"0011", text:"And be with you,Tom!"},
+    {file:"0041.wav", utmos:3.76, spk:"0012", text:"where are you going?"},
+  ],
+  sad: [
+    {file:"0044.wav", utmos:4.35, spk:"0012", text:"But things haven't change yet."},
+    {file:"0007.wav", utmos:4.34, spk:"0011", text:"It would be a hard choice."},
+    {file:"0031.wav", utmos:4.33, spk:"0012", text:"A special pot too."},
+    {file:"0036.wav", utmos:4.31, spk:"0012", text:"It's part of my secret."},
+  ],
+};
+
+const TEXTS_F5 = {
+  angry: [
+    {file:"0137.wav", utmos:4.14, spk:"0015", text:"Paul's teeth ached because of lemon."},
+    {file:"0223.wav", utmos:4.02, spk:"0018", text:"Another one, ten thousand dollars."},
+    {file:"0135.wav", utmos:3.81, spk:"0015", text:"Over them swooped the eagles."},
+    {file:"0271.wav", utmos:3.66, spk:"0020", text:"A special pot too."},
+    {file:"0157.wav", utmos:3.57, spk:"0016", text:"It would be a hard choice."},
+    {file:"0130.wav", utmos:3.54, spk:"0015", text:"She'll be feverish after so much thinking."},
+    {file:"0149.wav", utmos:3.50, spk:"0015", text:"Do you have anything in mind?"},
+    {file:"0169.wav", utmos:3.50, spk:"0016", text:"So Tom saw night as it were broad daylight."},
+    {file:"0218.wav", utmos:3.41, spk:"0018", text:"And his heart wagged with joy like a lamb's tail."},
+    {file:"0140.wav", utmos:3.39, spk:"0015", text:"Enough,you foolish chatter."},
+    {file:"0094.wav", utmos:3.33, spk:"0014", text:"She has no place for hot peper ."},
+    {file:"0210.wav", utmos:3.35, spk:"0018", text:"Called out the cloud."},
+    {file:"0134.wav", utmos:3.20, spk:"0015", text:"But things haven't change yet."},
+    {file:"0153.wav", utmos:3.20, spk:"0016", text:"And she caught at the brooch."},
+    {file:"0088.wav", utmos:3.18, spk:"0013", text:"What do you think of this question?"},
+  ],
+  happy: [
+    {file:"0213.wav", utmos:4.18, spk:"0018", text:"And she caught at the brooch."},
+    {file:"0141.wav", utmos:4.01, spk:"0015", text:"Why should I purchase my own?"},
+    {file:"0236.wav", utmos:3.99, spk:"0018", text:"What are you waiting for? man."},
+    {file:"0218.wav", utmos:3.95, spk:"0018", text:"And his heart wagged with joy like a lamb's tail."},
+    {file:"0151.wav", utmos:3.92, spk:"0016", text:"A special pot too."},
+    {file:"0232.wav", utmos:3.84, spk:"0018", text:"And what does it mean?"},
+    {file:"0224.wav", utmos:3.78, spk:"0018", text:"But things haven't change yet."},
+    {file:"0133.wav", utmos:3.71, spk:"0015", text:"Another one, ten thousand dollars."},
+    {file:"0177.wav", utmos:3.71, spk:"0016", text:"Dear customer,welcome to our ship."},
+    {file:"0143.wav", utmos:3.59, spk:"0015", text:"Lucy, a clever farmer."},
+    {file:"0246.wav", utmos:3.54, spk:"0019", text:"It's part of my secret."},
+    {file:"0227.wav", utmos:3.35, spk:"0018", text:"Paul's teeth ached because of lemon."},
+    {file:"0160.wav", utmos:3.34, spk:"0016", text:"She'll be feverish after so much thinking."},
+    {file:"0189.wav", utmos:3.16, spk:"0017", text:"She keeps saying I'm hers."},
+    {file:"0247.wav", utmos:3.15, spk:"0019", text:"It would be a hard choice."},
+  ],
+  sad: [
+    {file:"0227.wav", utmos:4.12, spk:"0018", text:"Paul's teeth ached because of lemon."},
+    {file:"0134.wav", utmos:4.02, spk:"0015", text:"But things haven't change yet."},
+    {file:"0233.wav", utmos:4.01, spk:"0018", text:"Lucy, a clever farmer."},
+    {file:"0213.wav", utmos:4.00, spk:"0018", text:"And she caught at the brooch."},
+    {file:"0232.wav", utmos:3.86, spk:"0018", text:"And what does it mean?"},
+    {file:"0144.wav", utmos:3.85, spk:"0015", text:"A whirring noise was heard."},
+    {file:"0121.wav", utmos:3.83, spk:"0015", text:"A special pot too."},
+    {file:"0215.wav", utmos:3.78, spk:"0018", text:"They are made of wood."},
+    {file:"0246.wav", utmos:3.72, spk:"0019", text:"It's part of my secret."},
+    {file:"0237.wav", utmos:3.68, spk:"0018", text:"Dear customer,welcome to our ship."},
+    {file:"0128.wav", utmos:3.66, spk:"0015", text:"And his heart wagged with joy like a lamb's tail."},
+    {file:"0135.wav", utmos:3.60, spk:"0015", text:"Over them swooped the eagles."},
+    {file:"0138.wav", utmos:3.57, spk:"0015", text:"And be with you,Tom!"},
+    {file:"0175.wav", utmos:3.56, spk:"0016", text:"I am going back to back home."},
+    {file:"0230.wav", utmos:3.53, spk:"0018", text:"Enough,you foolish chatter."},
+  ],
+};
+
+const MAX = 3;
+const selected = { angry: new Set(), happy: new Set(), sad: new Set() };
+
+function switchBB(id) {
+  currentBB = id;
+  render();
+}
+
+function render() {
+  // Tabs
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = "";
+  for (const [id, bb] of Object.entries(BACKBONES)) {
+    const t = document.createElement("div");
+    t.className = `tab ${id === currentBB ? "active" : ""}`;
+    t.textContent = bb.label;
+    t.onclick = () => switchBB(id);
+    tabs.appendChild(t);
+  }
+
+  const dir = BACKBONES[currentBB].dir;
+  const container = document.getElementById("content");
+  container.innerHTML = "";
+
+  const curTexts = currentBB === "candidates_f5_emoref" ? TEXTS_F5_EMOREF : currentBB.startsWith("candidates_gradtts") ? TEXTS_GRADTTS : currentBB.startsWith("candidates_matcha") ? TEXTS_MATCHA : TEXTS_F5;
+
+  for (const emo of ["angry", "happy", "sad"]) {
+    const items = curTexts[emo] || [];
+    const section = document.createElement("div");
+    section.className = "emotion-section";
+
+    const header = document.createElement("div");
+    header.className = `emotion-header emotion-${emo}`;
+    header.innerHTML = `<span>${emo.toUpperCase()} (${items.length} candidates)</span><span>${selected[emo].size}/${MAX}</span>`;
+    section.appendChild(header);
+
+    items.forEach((item, idx) => {
+      const row = document.createElement("div");
+      row.className = `sample-row ${selected[emo].has(idx) ? "selected" : ""}`;
+      row.onclick = (e) => { if (e.target.tagName !== "AUDIO") toggle(emo, idx); };
+
+      const sel = selected[emo].has(idx) ? `<span class="badge">SELECTED</span>` : "";
+      row.innerHTML = `
+        <div class="row-num">${idx+1}</div>
+        <div class="row-info">
+          <div class="row-text">"${item.text}" ${sel}</div>
+          <div class="row-meta">Spk ${item.spk} | ${item.file}</div>
+        </div>
+        <div class="row-audio"><audio controls preload="none"
+          src="${dir}/${emo}/${item.file}"></audio></div>
+      `;
+      section.appendChild(row);
+    });
+    container.appendChild(section);
+  }
+  updateCount();
+}
+
+function toggle(emo, idx) {
+  if (selected[emo].has(idx)) selected[emo].delete(idx);
+  else if (selected[emo].size < MAX) selected[emo].add(idx);
+  else { alert(`${emo} 已选满 ${MAX} 条`); return; }
+  render();
+}
+
+function updateCount() {
+  const n = selected.angry.size + selected.happy.size + selected.sad.size;
+  document.getElementById("countText").textContent = `${n}/9`;
+  document.getElementById("exportBtn").disabled = n < 9;
+}
+
+function exportSelection() {
+  const curTexts = currentBB === "candidates_f5_emoref" ? TEXTS_F5_EMOREF : currentBB.startsWith("candidates_gradtts") ? TEXTS_GRADTTS : currentBB.startsWith("candidates_matcha") ? TEXTS_MATCHA : TEXTS_F5;
+  const result = { backbone: BACKBONES[currentBB].label };
+  for (const emo of ["angry","happy","sad"]) {
+    result[emo] = [...selected[emo]].sort().map(i => {
+      const t = curTexts[emo][i];
+      return { rank: i+1, file: t.file, text: t.text, spk: t.spk };
+    });
+  }
+  const s = JSON.stringify(result, null, 2);
+  const blob = new Blob([s], {type:"application/json"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = "selected_samples.json"; a.click();
+  navigator.clipboard.writeText(s).catch(()=>{});
+  alert("已下载！请将 JSON 发给 Claude 更新评测网页。");
+}
+
+render();
+</script>
+</body>
+</html>
