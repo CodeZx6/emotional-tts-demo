@@ -3,125 +3,347 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Representation Steering for Emotional Robot Speech — Demo</title>
+<title>DUET: Representation Steering for Emotion Control in Speech Synthesis</title>
 <style>
+:root {
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --bg: #ffffff;
+    --bg-alt: #f8fafc;
+    --border: #e2e8f0;
+    --angry: #dc2626;
+    --angry-bg: #fef2f2;
+    --happy: #ca8a04;
+    --happy-bg: #fefce8;
+    --sad: #2563eb;
+    --sad-bg: #eff6ff;
+    --radius: 8px;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-       background: #f5f5f5; color: #333; line-height: 1.6; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+       background: var(--bg-alt); color: var(--text); line-height: 1.7;
+       -webkit-font-smoothing: antialiased; }
 
-/* ── Header ── */
-header { background: linear-gradient(135deg, #1a1a2e, #16213e);
-         color: #fff; padding: 48px 20px 40px; text-align: center; }
-header h1 { font-size: 1.8em; font-weight: 700; margin-bottom: 8px; }
-header .subtitle { font-size: 1.05em; color: #a8b4c8; margin-bottom: 16px; }
-header .badge { display: inline-block; background: rgba(255,255,255,0.12);
-                border: 1px solid rgba(255,255,255,0.2);
-                padding: 4px 14px; border-radius: 20px; font-size: 0.85em; color: #ccc; }
+/* ── Layout ── */
+.wrapper { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+/* ── Hero ── */
+.hero { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+        color: #fff; padding: 56px 24px 48px; text-align: center; }
+.hero h1 { font-size: 2em; font-weight: 700; letter-spacing: -0.02em;
+           max-width: 720px; margin: 0 auto 6px; }
+.hero .method-name { font-size: 1.1em; color: #93c5fd; font-weight: 600;
+                     margin-bottom: 16px; }
+.hero .authors { font-size: 0.92em; color: #94a3b8; margin-bottom: 20px; }
+.hero .links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hero .links a { display: inline-flex; align-items: center; gap: 6px;
+                 padding: 8px 18px; border-radius: 20px; font-size: 0.88em;
+                 font-weight: 600; text-decoration: none; transition: all 0.2s; }
+.btn-paper { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.25); }
+.btn-paper:hover { background: rgba(255,255,255,0.25); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
 
 /* ── Sections ── */
-section { background: #fff; border-radius: 12px; padding: 32px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin: 24px auto; max-width: 960px; }
-section h2 { font-size: 1.35em; margin-bottom: 16px; color: #1a1a2e;
-             border-bottom: 2px solid #eef; padding-bottom: 8px; }
-section p { margin-bottom: 12px; }
+section { background: var(--bg); border-radius: 12px; padding: 36px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03);
+          margin: 20px auto; max-width: 920px; }
+section h2 { font-size: 1.3em; font-weight: 700; margin-bottom: 16px; color: var(--text);
+             display: flex; align-items: center; gap: 10px; }
+section h2::before { content: ''; width: 4px; height: 24px; background: var(--accent);
+                     border-radius: 2px; flex-shrink: 0; }
+section h3 { font-size: 1.05em; font-weight: 600; margin: 24px 0 12px; }
+
+/* ── Abstract ── */
+.abstract { border-left: 3px solid var(--accent); padding-left: 20px;
+            color: var(--text-secondary); font-size: 0.93em; line-height: 1.8; }
+
+/* ── Highlights ── */
+.highlights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0; }
+.highlight-card { background: var(--bg-alt); border: 1px solid var(--border);
+                  border-radius: var(--radius); padding: 20px; text-align: center; }
+.highlight-card .number { font-size: 1.8em; font-weight: 800; color: var(--accent);
+                          line-height: 1.2; }
+.highlight-card .label { font-size: 0.82em; color: var(--text-secondary); margin-top: 4px; }
+
+/* ── Figures ── */
+.figure { margin: 24px 0; text-align: center; }
+.figure img { max-width: 100%; border-radius: var(--radius); border: 1px solid var(--border); }
+.figure-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+.figure-row img { width: 100%; border-radius: var(--radius); border: 1px solid var(--border); }
+.caption { font-size: 0.82em; color: var(--text-secondary); margin-top: 8px;
+           text-align: center; line-height: 1.5; }
 
 /* ── Video gallery ── */
-.video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
-.video-card { background: #f8f8f8; border-radius: 8px; overflow: hidden;
-              border: 1px solid #eee; }
+.emo-section { margin: 28px 0 0; }
+.emo-label { display: inline-block; padding: 4px 14px; border-radius: 16px;
+             font-size: 0.88em; font-weight: 700; margin-bottom: 12px; }
+.emo-label-angry { background: var(--angry-bg); color: var(--angry); }
+.emo-label-happy { background: var(--happy-bg); color: var(--happy); }
+.emo-label-sad   { background: var(--sad-bg); color: var(--sad); }
+.video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+              gap: 14px; }
+.video-card { background: var(--bg-alt); border-radius: var(--radius); overflow: hidden;
+              border: 1px solid var(--border); transition: box-shadow 0.2s; }
+.video-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
 .video-card video { width: 100%; display: block; }
-.video-card .label { padding: 8px 12px; font-size: 0.85em; font-weight: 600; }
-.video-card .label-angry { color: #c0392b; background: #fde8e8; }
-.video-card .label-happy { color: #d4a017; background: #fef9e7; }
-.video-card .label-sad   { color: #2874a6; background: #e8f0fe; }
+.video-card .meta { padding: 10px 14px; font-size: 0.82em; color: var(--text-secondary); }
+
+/* ── BibTeX ── */
+.bibtex { background: #0f172a; color: #94a3b8; border-radius: var(--radius);
+          padding: 20px; font-family: 'SF Mono', 'Fira Code', monospace;
+          font-size: 0.78em; line-height: 1.6; overflow-x: auto; position: relative; }
+.bibtex .copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1);
+                    border: 1px solid rgba(255,255,255,0.2); color: #94a3b8;
+                    padding: 4px 12px; border-radius: 4px; cursor: pointer;
+                    font-size: 0.85em; transition: all 0.2s; }
+.bibtex .copy-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
 
 /* ── Footer ── */
-footer { text-align: center; padding: 32px 20px; color: #999; font-size: 0.85em; }
+footer { text-align: center; padding: 36px 20px; color: var(--text-secondary);
+         font-size: 0.82em; }
+
+/* ── TOC ── */
+.toc { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+       padding: 12px 0; margin: 0 auto; max-width: 920px; }
+.toc a { font-size: 0.85em; color: var(--text-secondary); text-decoration: none;
+         padding: 4px 12px; border-radius: 16px; border: 1px solid var(--border);
+         background: var(--bg); transition: all 0.2s; }
+.toc a:hover { border-color: var(--accent); color: var(--accent); }
 
 @media (max-width: 700px) {
+    .hero h1 { font-size: 1.5em; }
+    section { padding: 24px; margin: 12px 16px; }
+    .highlights { grid-template-columns: 1fr; }
+    .figure-row { grid-template-columns: 1fr; }
     .video-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 
-<header>
-    <h1>Representation Steering for Emotional Robot Speech</h1>
-    <p class="subtitle">Deploying inference-time emotion control on an Ameca humanoid robot</p>
-    <span class="badge">NeurIPS 2026 — Anonymous Submission</span>
-</header>
+<!-- ═══ Hero ═══ -->
+<div class="hero">
+    <div class="method-name">DUET</div>
+    <h1>Representation Steering for Emotion Control in Speech Synthesis</h1>
+    <p class="authors">Anonymous Authors &mdash; NeurIPS 2026 Submission</p>
+    <div class="links">
+        <a class="btn-paper" href="#">Paper (PDF)</a>
+        <a class="btn-paper" href="#">arXiv</a>
+        <a class="btn-paper" href="#">Code</a>
+        <a class="btn-primary" href="#robot-demo">Robot Demo</a>
+    </div>
+</div>
 
-<section id="robot-video">
-    <h2>Robot Video Gallery</h2>
-    <p>
-        Short clips of Ameca expressing each emotion using our generated emotional speech.
-        Facial expressions are synchronized with the audio content.
+<!-- ═══ TOC ═══ -->
+<nav class="toc">
+    <a href="#abstract">Abstract</a>
+    <a href="#method">Method</a>
+    <a href="#results">Results</a>
+    <a href="#robot-demo">Robot Demo</a>
+    <a href="#citation">Citation</a>
+</nav>
+
+<!-- ═══ Abstract ═══ -->
+<section id="abstract">
+    <h2>Abstract</h2>
+    <p class="abstract">
+        Emotionally expressive speech is critical to advancing humanoid robots toward human-like interaction.
+        Modern TTS models produce highly natural speech but lack explicit emotion control. We discover that
+        pretrained TTS models encode emotion as a <strong>linearly decodable signal in a low-dimensional subspace
+        nearly orthogonal to speaker identity</strong>, even without any emotion training objective.
+        Building on this finding, we propose <strong>DUET</strong>, a training-free dual-space method that steers
+        emotion in any frozen iterative TTS model. DUET combines constrained discriminant probing for optimal
+        latent steering directions with magnitude-aware intervention, and routes an emotion objective through a
+        differentiable vocoder under a scheduled trust region for spectral emotion refinement.
+        Evaluated on <strong>5 backbones, 3 datasets, and 10 baselines</strong>, DUET achieves emotion control that
+        exceeds the best trained baseline on 4 of 5 backbones. Deployment on an <strong>Ameca humanoid robot</strong>
+        further demonstrates the potential of steered emotional speech for affective human-robot interaction.
     </p>
+</section>
 
-    <h3 style="color:#c0392b; margin: 20px 0 12px;">Angry</h3>
-    <div class="video-grid">
-        <div class="video-card">
-            <video controls preload="metadata" src="video/angry_1.mp4"></video>
-            <div class="label label-angry">Angry — Clip 1</div>
+<!-- ═══ Highlights ═══ -->
+<section>
+    <h2>Key Results</h2>
+    <div class="highlights">
+        <div class="highlight-card">
+            <div class="number">75.5%</div>
+            <div class="label">Best SER accuracy<br>(training-free, GradTTS)</div>
         </div>
-        <div class="video-card">
-            <video controls preload="metadata" src="video/angry_2.mp4"></video>
-            <div class="label label-angry">Angry — Clip 2</div>
+        <div class="highlight-card">
+            <div class="number">+28.7pp</div>
+            <div class="label">Over best trained baseline<br>(Qwen3-TTS: 46.8%)</div>
         </div>
-        <div class="video-card">
-            <video controls preload="metadata" src="video/angry_3.mp4"></video>
-            <div class="label label-angry">Angry — Clip 3</div>
-        </div>
-    </div>
-
-    <h3 style="color:#d4a017; margin: 20px 0 12px;">Happy</h3>
-    <div class="video-grid">
-        <div class="video-card">
-            <video controls preload="metadata" src="video/happy_1.mp4"></video>
-            <div class="label label-happy">Happy — Clip 1</div>
-        </div>
-        <div class="video-card">
-            <video controls preload="metadata" src="video/happy_2.mp4"></video>
-            <div class="label label-happy">Happy — Clip 2</div>
-        </div>
-        <div class="video-card">
-            <video controls preload="metadata" src="video/happy_3.mp4"></video>
-            <div class="label label-happy">Happy — Clip 3</div>
-        </div>
-        <div class="video-card">
-            <video controls preload="metadata" src="video/happy_4.mp4"></video>
-            <div class="label label-happy">Happy — Clip 4</div>
-        </div>
-        <div class="video-card">
-            <video controls preload="metadata" src="video/happy_5.mp4"></video>
-            <div class="label label-happy">Happy — Clip 5</div>
-        </div>
-    </div>
-
-    <h3 style="color:#2874a6; margin: 20px 0 12px;">Sad</h3>
-    <div class="video-grid">
-        <div class="video-card">
-            <video controls preload="metadata" src="video/sad_1.mp4"></video>
-            <div class="label label-sad">Sad — Clip 1</div>
-        </div>
-        <div class="video-card">
-            <video controls preload="metadata" src="video/sad_2.mp4"></video>
-            <div class="label label-sad">Sad — Clip 2</div>
-        </div>
-        <div class="video-card">
-            <video controls preload="metadata" src="video/sad_3.mp4"></video>
-            <div class="label label-sad">Sad — Clip 3</div>
-        </div>
-        <div class="video-card">
-            <video controls preload="metadata" src="video/sad_4.mp4"></video>
-            <div class="label label-sad">Sad — Clip 4</div>
+        <div class="highlight-card">
+            <div class="number">5</div>
+            <div class="label">TTS backbones tested<br>(zero retraining)</div>
         </div>
     </div>
 </section>
 
+<!-- ═══ Method ═══ -->
+<section id="method">
+    <h2>Method Overview</h2>
+    <p style="color:var(--text-secondary); font-size:0.93em; margin-bottom:16px;">
+        DUET operates in two complementary spaces. In <strong>latent space</strong>, constrained discriminant
+        probing extracts emotion-specific steering directions from a frozen model's hidden states.
+        In <strong>acoustic space</strong>, a differentiable vocoder routes an SER objective
+        into mel-spectrogram modifications under a scheduled trust region. Both signals are applied at
+        inference time with no parameter updates.
+    </p>
+    <div class="figure">
+        <img src="figures/fig_overview.png" alt="DUET method overview">
+        <p class="caption"><strong>Figure 1.</strong> DUET overview &mdash;
+            (a) Latent steering via constrained discriminant probing,
+            (b) Dual-space guidance pipeline, (c) Trust-region guarantee.</p>
+    </div>
+</section>
+
+<!-- ═══ Results ═══ -->
+<section id="results">
+    <h2>Results Across Backbones</h2>
+    <p style="color:var(--text-secondary); font-size:0.93em; margin-bottom:16px;">
+        DUET is evaluated on 5 architecturally diverse TTS backbones (DiT, Transformer, U-Net,
+        progressive distillation, and lightweight diffusion) across 3 emotion speech datasets.
+        Without any training, DUET exceeds the best trained baseline on 4 of 5 backbones.
+    </p>
+    <div class="figure-row">
+        <div>
+            <img src="figures/fig1_backbone_bar.png" alt="SER comparison across backbones">
+            <p class="caption"><strong>Figure 2.</strong> Emotion accuracy (SER %) across 5 backbones.
+                Blue: DUET (training-free). Gray: best trained baseline (Qwen3-TTS).</p>
+        </div>
+        <div>
+            <img src="figures/fig1_radar.png" alt="Per-emotion radar chart">
+            <p class="caption"><strong>Figure 3.</strong> Per-emotion SER on ESD.
+                DUET (red) vs. trained baselines across angry, happy, sad.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Robot Demo ═══ -->
+<section id="robot-demo">
+    <h2>Robot Deployment</h2>
+    <p style="color:var(--text-secondary); font-size:0.93em; margin-bottom:16px;">
+        DUET is deployed on an
+        <a href="https://engineeredarts.co.uk/robot/ameca/" target="_blank" style="color:var(--accent)">Ameca humanoid robot</a>
+        (Engineered Arts) to demonstrate training-free emotion control on a physical embodied agent.
+        Speech is generated using our method and played through the robot with
+        <strong>phoneme-to-viseme lip synchronization</strong> and
+        <strong>emotion-matched facial expressions</strong> (60+ facial actuators).
+        Angry utterances pair raised vocal intensity with a furrowed brow;
+        happy utterances pair bright tone with a smile;
+        sad utterances pair subdued prosody with a downcast gaze.
+    </p>
+
+    <div class="figure">
+        <img src="figures/ameca_robot.png" alt="Ameca robot expressing angry, happy, and sad emotions"
+             style="max-width:680px;">
+        <p class="caption"><strong>Figure 4.</strong> Ameca speaking with DUET-steered emotional speech.
+            Facial expressions are synchronized with the audio emotion.</p>
+    </div>
+
+    <!-- Angry -->
+    <div class="emo-section">
+        <span class="emo-label emo-label-angry">Angry</span>
+        <div class="video-grid">
+            <div class="video-card">
+                <video controls preload="metadata" src="video/angry_1.mp4"></video>
+                <div class="meta">Clip 1 &middot; 4.9s</div>
+            </div>
+            <div class="video-card">
+                <video controls preload="metadata" src="video/angry_2.mp4"></video>
+                <div class="meta">Clip 2 &middot; 7.3s</div>
+            </div>
+            <div class="video-card">
+                <video controls preload="metadata" src="video/angry_3.mp4"></video>
+                <div class="meta">Clip 3 &middot; 12.4s</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Happy -->
+    <div class="emo-section">
+        <span class="emo-label emo-label-happy">Happy</span>
+        <div class="video-grid">
+            <div class="video-card">
+                <video controls preload="metadata" src="video/happy_1.mp4"></video>
+                <div class="meta">Clip 1 &middot; 7.3s</div>
+            </div>
+            <div class="video-card">
+                <video controls preload="metadata" src="video/happy_2.mp4"></video>
+                <div class="meta">Clip 2 &middot; 7.1s</div>
+            </div>
+            <div class="video-card">
+                <video controls preload="metadata" src="video/happy_3.mp4"></video>
+                <div class="meta">Clip 3 &middot; 4.7s</div>
+            </div>
+            <div class="video-card">
+                <video controls preload="metadata" src="video/happy_4.mp4"></video>
+                <div class="meta">Clip 4 &middot; 7.3s</div>
+            </div>
+            <div class="video-card">
+                <video controls preload="metadata" src="video/happy_5.mp4"></video>
+                <div class="meta">Clip 5 &middot; 6.7s</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sad -->
+    <div class="emo-section">
+        <span class="emo-label emo-label-sad">Sad</span>
+        <div class="video-grid">
+            <div class="video-card">
+                <video controls preload="metadata" src="video/sad_1.mp4"></video>
+                <div class="meta">Clip 1 &middot; 6.4s</div>
+            </div>
+            <div class="video-card">
+                <video controls preload="metadata" src="video/sad_2.mp4"></video>
+                <div class="meta">Clip 2 &middot; 9.1s</div>
+            </div>
+            <div class="video-card">
+                <video controls preload="metadata" src="video/sad_3.mp4"></video>
+                <div class="meta">Clip 3 &middot; 11.7s</div>
+            </div>
+            <div class="video-card">
+                <video controls preload="metadata" src="video/sad_4.mp4"></video>
+                <div class="meta">Clip 4 &middot; 11.6s</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Citation ═══ -->
+<section id="citation">
+    <h2>Citation</h2>
+    <div class="bibtex">
+        <button class="copy-btn" onclick="copyBib()">Copy</button>
+<pre id="bib-text">@inproceedings{anonymous2026duet,
+  title     = {Representation Steering for Emotion Control
+               in Speech Synthesis},
+  author    = {Anonymous},
+  booktitle = {Advances in Neural Information Processing
+               Systems (NeurIPS)},
+  year      = {2026}
+}</pre>
+    </div>
+</section>
+
 <footer>
-    Anonymous submission to NeurIPS 2026
+    Anonymous submission to NeurIPS 2026 &mdash; Under double-blind review
 </footer>
 
+<script>
+function copyBib() {
+    const text = document.getElementById('bib-text').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+}
+</script>
 </body>
 </html>
