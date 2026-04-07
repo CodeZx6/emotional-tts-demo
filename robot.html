@@ -42,7 +42,7 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 /* ── Sections ── */
 section { background: var(--bg); border-radius: 12px; padding: 36px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03);
-          margin: 20px auto; max-width: 920px; }
+          margin: 20px auto; max-width: 1100px; }
 section h2 { font-size: 1.3em; font-weight: 700; margin-bottom: 16px;
              display: flex; align-items: center; gap: 10px; }
 section h2::before { content: ''; width: 4px; height: 24px; background: var(--accent);
@@ -59,7 +59,7 @@ section h2::before { content: ''; width: 4px; height: 24px; background: var(--ac
 .emo-label-angry { background: var(--angry-bg); color: var(--angry); }
 .emo-label-happy { background: var(--happy-bg); color: var(--happy); }
 .emo-label-sad   { background: var(--sad-bg); color: var(--sad); }
-.video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.video-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 .video-card { background: var(--bg-alt); border-radius: var(--radius); overflow: hidden;
               border: 1px solid var(--border); transition: box-shadow 0.2s; }
 .video-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
@@ -69,6 +69,9 @@ section h2::before { content: ''; width: 4px; height: 24px; background: var(--ac
 /* ── Footer ── */
 footer { text-align: center; padding: 36px 20px; color: var(--text-sec); font-size: 0.82em; }
 
+@media (max-width: 900px) {
+    .video-grid { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 640px) {
     .hero h1 { font-size: 1.4em; }
     section { padding: 24px; margin: 12px 16px; }
@@ -111,13 +114,6 @@ footer { text-align: center; padding: 36px 20px; color: var(--text-sec); font-si
 
 <section id="robot-demo">
     <h2>Robot Deployment</h2>
-    <p style="color:var(--text-sec); font-size:0.93em; margin-bottom:20px;">
-        DUET is deployed on an
-        <a href="https://engineeredarts.co.uk/robot/ameca/" target="_blank" style="color:var(--accent)">Ameca humanoid robot</a>
-        (Engineered Arts) to demonstrate training-free emotion control on a physical embodied agent.
-        Speech is generated using our method and played through the robot with
-        phoneme-to-viseme lip synchronization and emotion-matched facial expressions (60+ facial actuators).
-    </p>
 
     <div class="emo-section">
         <span class="emo-label emo-label-angry">Angry</span>
